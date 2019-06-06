@@ -1,6 +1,7 @@
 package com.example.boardroombooking
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.os.Build
@@ -8,10 +9,12 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.SystemClock
 import android.support.annotation.RequiresApi
+import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import com.android.volley.toolbox.JsonObjectRequest
 import com.google.gson.Gson
@@ -38,9 +41,7 @@ const val username = "ratnu"
 const val password = "mandem"
 var location = "Alcorn"
 const val pattern1 = "MM/dd/yyyy, HH:mm:ss"
-
 class MainActivity : AppCompatActivity() {
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         requestedOrientation = (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
@@ -59,8 +60,15 @@ class MainActivity : AppCompatActivity() {
         //Onclick Action For the fab..
         fab.setOnClickListener { view ->
             Toast.makeText(this,"Creating a meeting!",Toast.LENGTH_SHORT).show()
-            fetchJson()
+            buttonClicked(view)
         }
+
+    }
+    fun buttonClicked(view: View){
+        val intent = Intent(this,MakeBooking::class.java).apply {
+            putExtra("Ratnu","exposed")
+        }
+        startActivity(intent)
     }
     fun strToDate(date:String?,pattern:String? = pattern1): Date { //Changes the string to a date object.
         return SimpleDateFormat(pattern).parse(date)
@@ -132,12 +140,14 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread{
                     recycle_main.adapter =  MainAdapter(dataList) //Run the the recycler view code.
                 }
-                //val boardroom =  gson.fromJson(body,Object::class.java)
             }
         })
     }
 }
-    class Data (
+
+
+
+class Data (
     @SerializedName("a")
     val a:Content? = null,
     @SerializedName("endingTime")
