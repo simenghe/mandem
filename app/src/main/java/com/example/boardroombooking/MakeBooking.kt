@@ -1,5 +1,6 @@
 package com.example.boardroombooking
 
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -30,6 +31,19 @@ class MakeBooking : AppCompatActivity(){
         //am end.
         spinner_amend.adapter =  ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,meridian)
         spinner_amend.onItemSelectedListener = SpinnerAdapter()
+        //On click listener for SAVE BUTTON, Triggers for valid entries in the boxes.
+        btn_cancel.setOnClickListener(){
+            val intent = Intent(this,MainActivity::class.java).apply {
+                putExtra("Ratnu","Main ting")
+            }
+            startActivity(intent)
+        }
+        btn_save.setOnClickListener(){
+            //Create the date objects from the selected fields...
+            val startString = spinner_start.selectedItem.toString() + spinner_amstart.selectedItem.toString()
+            val endString:String = spinner_end.selectedItem.toString() + spinner_amstart.selectedItem.toString()
+        }
+
 
 
     }

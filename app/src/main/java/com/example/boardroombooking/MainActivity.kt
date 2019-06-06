@@ -137,6 +137,7 @@ class MainActivity : AppCompatActivity() {
                     println("title : ${it.title}")
                 }
                 dataList = sortByTime(dataList)
+                MainAdapter(dataList).removeOptions()
                 runOnUiThread{
                     recycle_main.adapter =  MainAdapter(dataList) //Run the the recycler view code.
                 }
