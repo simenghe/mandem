@@ -16,7 +16,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class MainAdapter(val dataList:ArrayList<Data>): RecyclerView.Adapter<MainAdapter.CustomViewHolder>() {
+class MainAdapter(val dataList: ArrayList<Data>) : RecyclerView.Adapter<MainAdapter.CustomViewHolder>() {
 
     //trying a get request....
     override fun getItemCount(): Int { //probably determined by a count through the database...
@@ -44,17 +44,19 @@ class MainAdapter(val dataList:ArrayList<Data>): RecyclerView.Adapter<MainAdapte
 
 
     }
-    fun getOccupied(curDate:Date): Data? {
+
+    fun getOccupied(curDate: Date): Data? {
         dataList.forEach {
             val startTime = SimpleDateFormat(pattern1).parse(it.startingTime)
             val endTime = SimpleDateFormat(pattern1).parse(it.endingTime)
             val Occupied = (startTime <= curDate && endTime >= curDate)
-            if(Occupied){
-               return it
+            if (Occupied) {
+                return it
             }
         }
         return null
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun removeOptions(): ArrayList<Date> {
         val curr = LocalDateTime.now()
@@ -66,27 +68,39 @@ class MainAdapter(val dataList:ArrayList<Data>): RecyclerView.Adapter<MainAdapte
         println("THIS IS THE CURRENT DATE : " + formattedDate)
         val curDate = SimpleDateFormat(pattern1).parse(formattedDate)
         val occupied = getOccupied(curDate)
-        val occStart = SimpleDateFormat(pattern1).parse(occupied?.startingTime.toString())
-        val occEnd = SimpleDateFormat(pattern1).parse(occupied?.endingTime.toString())
-        //println("OCC "+occStart.toString())
         val todayZero = SimpleDateFormat(datePat).parse(zeroDate)
-        val c = Calendar.getInstance()
-        c.time = todayZero
-        for (i in 0..48) { //range from 00:00 -> 24:00 create the list.
-            println(c.time.toString())
-            val prev = c.time
-            if(prev<occEnd){
-            }else{
-                occupiedDates.add(c.time)
+        if (occupied != null) {
+            val occStart = SimpleDateFormat(pattern1).parse(occupied?.startingTime.toString())
+            val occEnd = SimpleDateFormat(pattern1).parse(occupied?.endingTime.toString())
+            //println("OCC "+occStart.toString())
+            val c = Calendar.getInstance()
+            c.time = todayZero
+            for (i in 0..48) { //range from 00:00 -> 24:00 create the list.
+                println(c.time.toString())
+                val prev = c.time
+                if (prev < occEnd) {
+                } else {
+                    occupiedDates.add(c.time)
+                }
+                c.add(Calendar.MINUTE, 30)
             }
-            c.add(Calendar.MINUTE, 30)
-        }
-        //now filter the list of available times using some nasty algorithm
-        occupiedDates.forEach {
-            println("NEW LIST: "+ it.toString())
+            //now filter the list of available times using some nasty algorithm
+            occupiedDates.forEach {
+                println("NEW LIST: " + it.toString())
+            }
+        } else {
+            val c = Calendar.getInstance()
+            c.time = todayZero
+            for (i in 0..48) { //range from 00:00 -> 24:00 create the list.
+                println(c.time.toString())
+                val prev = c.time
+                occupiedDates.add(c.time)
+                c.add(Calendar.MINUTE, 30)
+            }
         }
         return occupiedDates
     }
+
     class CustomViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 
     }

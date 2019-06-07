@@ -4,10 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
-import android.os.Build
+import android.os.*
 import android.support.v7.app.AppCompatActivity
-import android.os.Bundle
-import android.os.SystemClock
 import android.support.annotation.RequiresApi
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
@@ -21,6 +19,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
+import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 import okhttp3.*
@@ -58,15 +57,10 @@ class MainActivity : AppCompatActivity() {
         txt_curDate.setText(formattedDate)
         recycle_main.addItemDecoration(VerticalSpaceItemDecoration(40))
         //Onclick Action For the fab..
-        fab.setOnClickListener { view ->
-            Toast.makeText(this,"Creating a meeting!",Toast.LENGTH_SHORT).show()
-            buttonClicked(view)
-        }
-
     }
-    fun buttonClicked(view: View){
+    fun buttonClicked(view: View,dataList: ArrayList<Data>){
         val intent = Intent(this,MakeBooking::class.java).apply {
-            putExtra("Ratnu","exposed")
+            putParcelableArrayListExtra("datalist",dataList)
         }
         startActivity(intent)
     }
@@ -137,9 +131,13 @@ class MainActivity : AppCompatActivity() {
                     println("title : ${it.title}")
                 }
                 dataList = sortByTime(dataList)
-                MainAdapter(dataList).removeOptions()
+                val s= MainAdapter(dataList).removeOptions()
                 runOnUiThread{
+                    println("DATALIST SIZE : " + dataList.count())
                     recycle_main.adapter =  MainAdapter(dataList) //Run the the recycler view code.
+                    fab.setOnClickListener { view ->
+                        buttonClicked(view,dataList)
+                    }
                 }
             }
         })
@@ -165,14 +163,101 @@ class Data (
     val title:String? = null,
     @SerializedName("userName")
     val userName:String? = null
-)
+):Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readParcelable(Content::class.java.classLoader),
+        parcel.readString(),
+        parcel.readValue(Int::class.java.classLoader) as? Int,
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString()
+    ) {
+    }
 
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeParcelable(a, flags)
+        parcel.writeString(endingTime)
+        parcel.writeValue(floor)
+        parcel.writeString(meetingRoom)
+        parcel.writeString(meetingState)
+        parcel.writeString(startingTime)
+        parcel.writeString(title)
+        parcel.writeString(userName)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<Data> {
+        override fun createFromParcel(parcel: Parcel): Data {
+            return Data(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Data?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
 
 
 class Content(
     @SerializedName("description")
     val description:String? = null,
     @SerializedName("id")
-    val id:String? = null)
-class Desc(val desc:String,val time:String)
+    val id:String? = null):Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readString(),
+        parcel.readString()
+    ) {
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(description)
+        parcel.writeString(id)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<Content> {
+        override fun createFromParcel(parcel: Parcel): Content {
+            return Content(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Content?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
+
+class Desc(val desc:String,val time:String):Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readString(),
+        parcel.readString()
+    ) {
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(desc)
+        parcel.writeString(time)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<Desc> {
+        override fun createFromParcel(parcel: Parcel): Desc {
+            return Desc(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Desc?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
 
