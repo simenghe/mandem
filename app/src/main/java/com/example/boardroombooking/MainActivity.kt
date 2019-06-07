@@ -36,6 +36,7 @@ import kotlin.collections.ArrayList
 
 const val datePat = "dd MMMM yyyy"
 const val timePat = "HH:mm"
+const val spinnerPat = "hh:mm a"
 const val username = "ratnu"
 const val password = "mandem"
 var location = "Alcorn"
@@ -52,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         val dateFormatter = DateTimeFormatter.ofPattern(datePat)
         val timeFormat = DateTimeFormatter.ofPattern(timePat)
         val formattedDate = curr.format(dateFormatter)
+        println("FORMATTED DATE" + formattedDate)
         val formattedTime = curr.format(timeFormat)
         //does not update unless app is closed....
         txt_curDate.setText(formattedDate)

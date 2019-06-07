@@ -70,13 +70,14 @@ class MainAdapter(val dataList: ArrayList<Data>) : RecyclerView.Adapter<MainAdap
         val occupied = getOccupied(curDate)
         val todayZero = SimpleDateFormat(datePat).parse(zeroDate)
         if (occupied != null) {
+            println("RUNNING NON NULL")
             val occStart = SimpleDateFormat(pattern1).parse(occupied?.startingTime.toString())
             val occEnd = SimpleDateFormat(pattern1).parse(occupied?.endingTime.toString())
             //println("OCC "+occStart.toString())
             val c = Calendar.getInstance()
             c.time = todayZero
             for (i in 0..48) { //range from 00:00 -> 24:00 create the list.
-                println(c.time.toString())
+                //println(c.time.toString())
                 val prev = c.time
                 if (prev < occEnd) {
                 } else {
@@ -85,19 +86,22 @@ class MainAdapter(val dataList: ArrayList<Data>) : RecyclerView.Adapter<MainAdap
                 c.add(Calendar.MINUTE, 30)
             }
             //now filter the list of available times using some nasty algorithm
-            occupiedDates.forEach {
-                println("NEW LIST: " + it.toString())
-            }
-        } else {
+        }else if(occupied==null){
+            println("its null")
             val c = Calendar.getInstance()
             c.time = todayZero
             for (i in 0..48) { //range from 00:00 -> 24:00 create the list.
-                println(c.time.toString())
                 val prev = c.time
                 occupiedDates.add(c.time)
                 c.add(Calendar.MINUTE, 30)
             }
+        }else{
+            println("wtf")
         }
+        occupiedDates.forEach {
+            println("NEW LIST: " + it.toLocaleString())
+        }
+
         return occupiedDates
     }
 
