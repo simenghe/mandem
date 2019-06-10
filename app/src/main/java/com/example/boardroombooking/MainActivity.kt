@@ -1,5 +1,6 @@
 package com.example.boardroombooking
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -42,21 +43,35 @@ const val password = "mandem"
 var location = "Alcorn"
 const val pattern1 = "MM/dd/yyyy, HH:mm:ss"
 class MainActivity : AppCompatActivity() {
+    private fun getCurrentTimeUsingDate(pattern:String = datePat):String {
+        val date = Date()
+        val strDateFormat = "hh:mm:ss a"
+        val dateFormat = SimpleDateFormat(pattern)
+        val formattedDate = dateFormat.format(date)
+        return formattedDate
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         requestedOrientation = (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         recycle_main.layoutManager= LinearLayoutManager(this)
+        getCurrentTimeUsingDate()
+
+        txt_curDate.setText(getCurrentTimeUsingDate())
+
+
+
+
         fetchJson()
-        val curr =  LocalDateTime.now()
-        val dateFormatter = DateTimeFormatter.ofPattern(datePat)
-        val timeFormat = DateTimeFormatter.ofPattern(timePat)
-        val formattedDate = curr.format(dateFormatter)
-        println("FORMATTED DATE" + formattedDate)
-        val formattedTime = curr.format(timeFormat)
+//        val curr =  LocalDateTime.now()
+//        val dateFormatter = DateTimeFormatter.ofPattern(datePat)
+//        val timeFormat = DateTimeFormatter.ofPattern(timePat)
+//        val formattedDate = curr.format(dateFormatter)
+//        println("FORMATTED DATE" + formattedDate)
+//        val formattedTime = curr.format(timeFormat)
         //does not update unless app is closed....
-        txt_curDate.setText(formattedDate)
+        //txt_curDate.setText(formattedDate)
         recycle_main.addItemDecoration(VerticalSpaceItemDecoration(40))
         //Onclick Action For the fab..
     }

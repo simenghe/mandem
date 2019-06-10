@@ -57,6 +57,15 @@ class MainAdapter(val dataList: ArrayList<Data>) : RecyclerView.Adapter<MainAdap
         return null
     }
 
+    fun isOccupied(curDate: Date,bookDate:Data): Boolean {
+            val startTime = SimpleDateFormat(pattern1).parse(bookDate.startingTime)
+            val endTime = SimpleDateFormat(pattern1).parse(bookDate.endingTime)
+            if (startTime <= curDate && endTime >= curDate) {
+                return true
+            }
+        return false
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun removeOptions(): ArrayList<Date> {
         val curr = LocalDateTime.now()
