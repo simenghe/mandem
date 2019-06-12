@@ -1,37 +1,27 @@
 package com.example.boardroombooking
 
-import android.annotation.SuppressLint
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.os.*
 import android.support.v7.app.AppCompatActivity
 import android.support.annotation.RequiresApi
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
-import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
+import android.text.Html
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
-import android.widget.Toast
-import com.android.volley.toolbox.JsonObjectRequest
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
-import kotlinx.android.parcel.Parcelize
+import kotlinx.android.synthetic.main.activity_bar.*
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main.view.*
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import org.json.JSONException
-import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
 
@@ -40,67 +30,236 @@ const val timePat = "HH:mm"
 const val spinnerPat = "hh:mm a"
 const val username = "ratnu"
 const val password = "mandem"
+const val delay:Long = 10000
 var location = "Alcorn"
 const val pattern1 = "MM/dd/yyyy, HH:mm:ss"
-class MainActivity : AppCompatActivity() {
-    private fun getCurrentTimeUsingDate(pattern:String = datePat):String {
+var counter = 0
+
+var dataList = ArrayList<Data>()
+val adapter = MainAdapter(dataList)
+var Occupation = false
+
+@Suppress("DEPRECATION")
+class MainActivity : AppCompatActivity(), Runnable {
+    override fun run() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    companion object {
+        const val REQUEST_CODE_SAVE_MEETING = 1
+        const val EXTRA_NEW_MEETING_DATA = "new_meeting_data"
+    }
+    public fun getCurrentTimeUsingDate(pattern:String = datePat):String {
         val date = Date()
         val strDateFormat = "hh:mm:ss a"
         val dateFormat = SimpleDateFormat(pattern)
         val formattedDate = dateFormat.format(date)
         return formattedDate
     }
+    fun getOccupied(curDate: Date): Data? {
+        dataList.forEach {
+            val startTime = SimpleDateFormat(pattern1).parse(it.startingTime)
+            val endTime = SimpleDateFormat(pattern1).parse(it.endingTime)
+            val Occupied = (startTime <= curDate && endTime >= curDate)
+            if (Occupied) {
+                return it
+            }
+        }
+        return null
+    }
+    fun isOccupied(curDate: Date,bookDate:Data): Boolean {
+        val startTime = SimpleDateFormat(pattern1).parse(bookDate.startingTime)
+        val endTime = SimpleDateFormat(pattern1).parse(bookDate.endingTime)
+        println("Occupied start: $startTime and Occ End = $endTime")
+        if (startTime <= curDate && endTime >= curDate) {
+            println("ITS TRUE")
+            return true
+        }
+        return false
+    }
+    fun isEnd(bookDate: Data,curDate: Date = Calendar.getInstance().time): Boolean{
+        val endDate = strToDate(bookDate.endingTime)
+        if(curDate>endDate){
+            return true
+        }
+        return false
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
+        val location = "Shaftesbury"
         requestedOrientation = (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        recycle_main.layoutManager= LinearLayoutManager(this)
+        setContentView(R.layout.activity_bar)
+        recycle_main.layoutManager = LinearLayoutManager(this)
         getCurrentTimeUsingDate()
-
-        txt_curDate.setText(getCurrentTimeUsingDate())
-
-
-
-
         fetchJson()
-//        val curr =  LocalDateTime.now()
-//        val dateFormatter = DateTimeFormatter.ofPattern(datePat)
-//        val timeFormat = DateTimeFormatter.ofPattern(timePat)
-//        val formattedDate = curr.format(dateFormatter)
-//        println("FORMATTED DATE" + formattedDate)
-//        val formattedTime = curr.format(timeFormat)
-        //does not update unless app is closed....
-        //txt_curDate.setText(formattedDate)
-        recycle_main.addItemDecoration(VerticalSpaceItemDecoration(40))
-        //Onclick Action For the fab..
+        recycle_main.addItemDecoration(VerticalSpaceItemDecoration(20))
+        recycle_main.adapter = adapter
+        recycle_main.setHasFixedSize(true)
+        txt_room.text = Html.fromHtml("Room: <b>$location</b>")
+        startRepeating(recycle_main)
+        fab.setOnClickListener { view ->
+            buttonClicked(view)
+        }
+        btn_refresh.setOnClickListener {
+            //we gon refresh
+            refreshList()
+        }
+        Handler().postDelayed({
+            //check if the first option is already occupied....
+            val startDate = Calendar.getInstance().time
+            println("INCREMENTING TIME, $startDate")
+            //dataList.removeAt(0)
+            //adapter.notifyItemChanged(0)
+
+        }, 3000)
     }
-    fun buttonClicked(view: View,dataList: ArrayList<Data>){
+
+
+
+
+    val handler = Handler()
+    fun startRepeating(v:View){
+        runnable.run()
+    }
+    fun stopRepeating(v:View){
+        handler.removeCallbacks(runnable)
+    }
+    val runnable = object: Runnable { //Refreshes every .. seconds
+        @RequiresApi(Build.VERSION_CODES.O)
+        override fun run() {
+            val startDate = Calendar.getInstance().time
+            counter++
+            println("Current count : $counter")
+            //check if the current time is occupied....
+            println("INCREMENTING TIME, $startDate")
+            refreshList()
+            handler.postDelayed(this, delay)
+        }
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_CODE_SAVE_MEETING && resultCode == Activity.RESULT_OK) {
+            // Get data from bundle and update recyclerview here
+            data?.getParcelableExtra<Data>(EXTRA_NEW_MEETING_DATA)?.let {
+                Log.d("MainActivity", "Meeting Saved:${it.title}")
+                dataList.add(it)
+                doOnListUpdate()
+                Handler().postDelayed({
+                    recycle_main.scrollToPosition(dataList.size - 1)
+                }, 400)
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    fun buttonClicked(view: View){
         val intent = Intent(this,MakeBooking::class.java).apply {
             putParcelableArrayListExtra("datalist",dataList)
         }
-        startActivity(intent)
+        startActivityForResult(intent, REQUEST_CODE_SAVE_MEETING)
     }
     fun strToDate(date:String?,pattern:String? = pattern1): Date { //Changes the string to a date object.
         return SimpleDateFormat(pattern).parse(date)
 
     }
+    fun fetchJson(){ //function to fetch json from the web.
+        var keys:Iterator<String>
+        println("FETCHING JSON")
+        //val url = "https://api.myjson.com/bins/9wzmf"
+        var url ="https://ratnuback.appspot.com/getBooking/Shaftesbury"
+        val credential = Credentials.basic(username, password);
+        val request = Request.Builder().url(url).header("Authorization",credential).build()
+        val client = OkHttpClient()
+        client.newCall(request).enqueue(object:Callback{
+            override fun onFailure(call: Call, e: IOException) {
+                println("fail")
+            }
+            @RequiresApi(Build.VERSION_CODES.O)
+            override fun onResponse(call: Call, response: Response) {
+                val body = response.body?.string()
+                try {
+                    val jsonObject = JSONObject(body)
+                    val gson = GsonBuilder().create()
+                    jsonObject.keys().forEach {
+                       // println("key: $it")
+                        //println(jsonObject[it].toString())
+                        //we can remove the options that are not in the day here.
+                        val curDate = Calendar.getInstance().time
+                        val booking = gson.fromJson(jsonObject[it].toString(), Data::class.java)
+                        if(isEnd(booking,curDate)){
+                            println("This booking has already ended")
+                        }
+                        else if(DateFunctions().isToday(curDate,booking)){
+                            println("Adding entry since it is today!")
+                            dataList.add(booking)
+                        }
+                        //dataList.add(gson.fromJson(jsonObject[it].toString(), Data::class.java))
+                    }
+                } catch (err: JSONException) {
+                    Log.d("Error", err.toString())
+                }
+                val occ = DateFunctions().getOccupied()
+                if(occ!=null){
+                    runOnUiThread{
+                        val endingString = DateFunctions().
+                            formatTimeUsingDate(strToDate(occ.endingTime), custSpinnerPat)
+                        txt_nextBooking.text = "Booked until ${endingString}"
+                        txt_bookedTitle.text = occ.title
+                        txt_bookingUser.text = occ.userName
+                    }
+                }else{
+                    runOnUiThread{
+                        txt_bookedTitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP,50f)
+                        txt_bookedTitle.text = "FREE"
+                        if(!dataList.isEmpty()){
+                            val nextBooking = dataList[0]
+                            val startingString = DateFunctions().
+                                formatTimeUsingDate(strToDate(nextBooking.startingTime), custSpinnerPat)
+                            txt_bookedTitle.text = "Next booking: ${startingString}"
+                        }else{
+                            txt_bookedTitle.text = "No more bookings today!"
+                        }
+
+
+                    }
+                }
+                dataList.forEach {
+                    println("title : ${it.title}")
+                }
+                //dataList = sortByTime(dataList)
+                doOnListUpdate()
+            }
+        })
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
-    fun sortByTime(dataList:ArrayList<Data>):ArrayList<Data>{
+    private fun doOnListUpdate() {
+        //dataList = DateFunctions().sortByTime(dataList)
+        //val s= MainAdapter(dataList).removeOptions()
+        if(!dataList.isEmpty()){
+            dataList.sortBy { strToDate(it.startingTime) }
+        }
+        runOnUiThread{
+            println("DATALIST SIZE : " + dataList.count())
+            //recycle_main.adapter =  MainAdapter(dataList) //Run the the recycler view code.
+            adapter.notifyDataSetChanged();
+        }
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun refreshList(){
+        dataList.clear()
+        fetchJson()
+    }
+    fun sortByTime(dataList: java.util.ArrayList<Data>): java.util.ArrayList<Data> {
         //also remove entries that are not in the day...
-        val curr =  LocalDateTime.now()
-        val dateFormatter = DateTimeFormatter.ofPattern(datePat)
-        val curDate = curr.format(dateFormatter)
-        val laterDate = curr.plusDays(1).format(dateFormatter)
-        println("\n THE DATE IS "+curDate)
-        println("\n THE LATE IS "+laterDate)
         val pattern2 = "dd MMMMM yyyy"
-        //The dates that are shown in the app must be between these two.
-        val todayStart = strToDate(curDate,pattern2)
-        val todayEnd = strToDate(laterDate,pattern2)
-        println(todayStart)
-        println(todayEnd)
-        val newData = ArrayList<Data>()
+        val dateFormat = SimpleDateFormat(pattern2)
+        val todayStart = dateFormat.parse(getCurrentTimeUsingDate())
+        val todayEnd = Date(todayStart.time + TimeUnit.DAYS.toMillis(1))
+        println("THE DATE IS :"+todayStart)
+        println("THE LATE IS "+todayEnd)
+        val newData = java.util.ArrayList<Data>()
         dataList.sortBy { strToDate(it.startingTime) }
         dataList.forEach {
             println(it.startingTime)
@@ -116,70 +275,25 @@ class MainActivity : AppCompatActivity() {
         }
         return newData
     }
-    fun fetchJson(){ //function to fetch json from the web.
-        var keys:Iterator<String>
-        println("FETCHING JSON")
-        //val url = "https://api.myjson.com/bins/9wzmf"
-        var url ="https://ratnuback.appspot.com/getBooking/Shaftesbury"
-        val credential = Credentials.basic(username, password);
-        val request = Request.Builder().url(url).header("Authorization",credential).build()
-        val client = OkHttpClient()
-        var dataList = ArrayList<Data>()
-        client.newCall(request).enqueue(object:Callback{
-            override fun onFailure(call: Call, e: IOException) {
-                println("fail")
-            }
-            @RequiresApi(Build.VERSION_CODES.O)
-            override fun onResponse(call: Call, response: Response) {
-                val body = response.body?.string()
-                try {
-                    val jsonObject = JSONObject(body)
-                    val gson = GsonBuilder().create()
-                    jsonObject.keys().forEach {
-                       // println("key: $it")
-                        //println(jsonObject[it].toString())
-                        dataList.add(gson.fromJson(jsonObject[it].toString(), Data::class.java))
-                    }
-                } catch (err: JSONException) {
-                    Log.d("Error", err.toString())
-                }
 
-                dataList.forEach {
-                    println("title : ${it.title}")
-                }
-                dataList = sortByTime(dataList)
-                val s= MainAdapter(dataList).removeOptions()
-                runOnUiThread{
-                    println("DATALIST SIZE : " + dataList.count())
-                    recycle_main.adapter =  MainAdapter(dataList) //Run the the recycler view code.
-                    fab.setOnClickListener { view ->
-                        buttonClicked(view,dataList)
-                    }
-                }
-            }
-        })
-    }
 }
-
-
-
 class Data (
     @SerializedName("a")
-    val a:Content? = null,
+    var a:Content? = null,
     @SerializedName("endingTime")
-    val endingTime:String? = null,
+    var endingTime:String? = null,
     @SerializedName("floor")
-    val floor:Int? = null,
+    var floor:Int? = null,
     @SerializedName("meetingRoom")
-    val meetingRoom:String?= null,
+    var meetingRoom:String?= null,
     @SerializedName("meetingState")
-    val meetingState:String? = null,
+    var meetingState:String? = null,
     @SerializedName("startingTime")
-    val startingTime:String? = null,
+    var startingTime:String? = null,
     @SerializedName("title")
-    val title:String? = null,
+    var title:String? = null,
     @SerializedName("userName")
-    val userName:String? = null
+    var userName:String? = null
 ):Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(Content::class.java.classLoader),

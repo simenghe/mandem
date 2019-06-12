@@ -17,11 +17,14 @@
                 android:screenOrientation="landscape"
                 android:configChanges="orientation|screenSize"
                 android:theme="@style/NoActionBar"
+                android:windowSoftInputMode="stateHidden|adjustPan"
                 android:launchMode = "singleInstance">
         </activity>
         <activity android:name=".MainActivity"
                   android:screenOrientation="landscape"
-                  android:configChanges="orientation|screenSize">
+                  android:configChanges="orientation|screenSize"
+                  android:windowSoftInputMode="stateHidden"
+                  android:launchMode = "singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

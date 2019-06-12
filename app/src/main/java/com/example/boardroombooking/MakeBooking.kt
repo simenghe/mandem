@@ -1,6 +1,7 @@
 package com.example.boardroombooking
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -21,6 +22,7 @@ import android.widget.Toast
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.Response
+import kotlinx.android.synthetic.main.activity_main.*
 
 import kotlinx.android.synthetic.main.activity_make_booking.*
 import kotlinx.android.synthetic.main.content_make_booking.*
@@ -33,33 +35,24 @@ import java.time.ZoneId
 import java.time.ZoneId.*
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 const val credentials = "ratnu:mandem"
 const val dataPattern = "M/d/yyyy, HH:mm:ss"
 const val selectPattern = spinnerPat +" "+ datePat
+const val custSpinnerPat = "h:mm a"
 @Suppress("DEPRECATION")
-class MakeBooking() : AppCompatActivity(),Serializable,Parcelable{
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun formatToDataPattern(date:String): String? {
-        val startToLDC = convertToLocalDateTime(SimpleDateFormat(selectPattern).parse(date))
-        val dataFormat = DateTimeFormatter.ofPattern(dataPattern)
-        val formattedStart = startToLDC.format(dataFormat)
-        return formattedStart
+class MakeBooking() : AppCompatActivity() {
+    private fun changeActivity(data:Data? = null){
+        data?.let {
+            Intent(this,MainActivity::class.java).apply {
+                putExtra(MainActivity.EXTRA_NEW_MEETING_DATA, data)
+                setResult(Activity.RESULT_OK, this)
+            }
+        }
+        finish()
     }
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun convertToLocalDateTime(dateToConvert: Date): LocalDateTime {
-        return dateToConvert.toInstant()
-            .atZone(systemDefault())
-            .toLocalDateTime()
-    }
-    constructor(parcel: Parcel) : this() {
-    }
-    fun changeActivity(){
-        val intent = Intent(this,MainActivity::class.java.apply {  })
-        startActivity(intent)
-    }
-
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,83 +62,81 @@ class MakeBooking() : AppCompatActivity(),Serializable,Parcelable{
         }
         val startTimeList = MainAdapter(dataList).removeOptions()
         val length = startTimeList.count()
+        Log.d("cringe",length.toString())
         val startList = ArrayList<String>(length)
         for ((i, value) in startTimeList.withIndex()) {
-            val ldt = convertToLocalDateTime(startTimeList[i])
-            val custSpinner = "h:mm a"
-            val ldtFormatter = DateTimeFormatter.ofPattern(custSpinner)
-            val formattedSpinner = ldt.format(ldtFormatter)
+
+            val formattedSpinner = DateFunctions().formatTimeUsingDate(startTimeList[i],custSpinnerPat)
             startList.add(formattedSpinner)
             println(formattedSpinner)
         }
         requestedOrientation = (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_make_booking)
-        val meridian = listOf("AM","PM")
-        val times = listOf("10:00","11:00","12:00")
         spinner_start.adapter = ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,startList)
         spinner_start.onItemSelectedListener = SpinnerAdapter()
         //Fill the spinner_end adapter
         spinner_end.adapter = ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,startList)
         spinner_end.onItemSelectedListener = SpinnerAdapter()
-        //Start the AM parts
-        spinner_amstart.adapter = ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,meridian)
-        spinner_amstart.onItemSelectedListener = SpinnerAdapter()
-
-        //am end.
-        spinner_amend.adapter =  ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,meridian)
-        spinner_amend.onItemSelectedListener = SpinnerAdapter()
         //On click listener for SAVE BUTTON, Triggers for valid entries in the boxes.
         btn_save.setOnClickListener(){
-            //val remainingTimes
-            //Create the date objects from the selected fields...
-            val curr = LocalDateTime.now()
-            val zeroDate = DateTimeFormatter.ofPattern(datePat)
-            val zeroFormat = curr.format(zeroDate)
-            val dateFormatter = DateTimeFormatter.ofPattern(pattern1)
-            val formattedDate = curr.format(dateFormatter)
-            val curDate = SimpleDateFormat(pattern1).parse(formattedDate) //current date object.
-            println(curDate.toString())
-            val startString = spinner_start.selectedItem.toString()+" "+ zeroFormat
-            val endString = spinner_end.selectedItem.toString() +" " +zeroFormat
+            val dateFormat = SimpleDateFormat(datePat)
+            val todayStart = dateFormat.parse(DateFunctions().getCurrentTimeUsingDate())
+            val todayEnd = Date(todayStart.time + TimeUnit.DAYS.toMillis(1))
+            val zeroEnd = DateFunctions().formatTimeUsingDate(todayEnd, datePat)
+            println("ZEROEND: $zeroEnd" )
+            val zeroFormat = DateFunctions().getCurrentTimeUsingDate(datePat)
+            var startString = spinner_start.selectedItem.toString()+" "+ zeroFormat
+            var endString = spinner_end.selectedItem.toString() +" " +zeroFormat
+            //special case for 12am.... 12:00 AM
+            val midNight = "12:00 AM"
+            if(spinner_start.selectedItem.toString() == midNight){
+                println("MIDNIGHT")
+                startString = spinner_start.selectedItem.toString()+" "+ zeroEnd
+            }else if(spinner_end.selectedItem.toString()==midNight){
+                println("MIDNIGHT")
+                endString = spinner_end.selectedItem.toString() +" " +zeroEnd
+            }
+            println("THE STRING: $startString + $endString")
             println("The end string"+startString)
             val selectPattern = spinnerPat +" "+ datePat
             Log.d("Pattern1",selectPattern)
-
-            val formattedStart = formatToDataPattern(startString)
-            val formattedEnd = formatToDataPattern(endString)
+            val startDate = SimpleDateFormat(selectPattern).parse(startString)
+            val endDate = SimpleDateFormat(selectPattern).parse(endString)
+            val formattedStart = DateFunctions().formatTimeUsingDate(startDate, dataPattern)
+            val formattedEnd = DateFunctions().formatTimeUsingDate(endDate, dataPattern)
             Log.d("timers",formattedStart.toString())
-            //Log.d("Pattern2",formattedStart)
-            val tDate = SimpleDateFormat(selectPattern).parse(endString)
 
-
-
-
-            val url = "https://ratnuback.appspot.com/addBooking/Alcorn"
+            val url = "https://ratnuback.appspot.com/addBooking/Shaftesbury"
             val params = HashMap<String,String>()
             val placeHolderA = HashMap<String,String>()
-            params["ratnu"] = "Ban"
             //dependent on location.
             params["floor"] = "2"
             params["startingTime"] = formattedStart.toString()
             params["endingTime"] = formattedEnd.toString()
             params["title"] = edit_title.text.toString()
             params["userName"] = edit_name.text.toString()
+            params["description"] = "Booked from the Android APP!"
             val jsonObject = JSONObject(params)
             val request = CustomJsonObjectRequestBasicAuth(
                 Request.Method.POST,url,jsonObject,
                 Response.Listener { response ->
-                    val s = response.toString()
-                    // Process the json
-                    try {
-                         println("Response: $s")
-                    }catch (e:Exception){
-                        println("Exception: $e" + "$response")
-                    }
-
+                    val dataObject = Data()
+                    dataObject.title = params["title"]
+                    dataObject.endingTime = formattedEnd.toString()
+                    dataObject.startingTime = formattedStart.toString()
+                    dataObject.userName = params["userName"]
+                    changeActivity(dataObject)
                 }, Response.ErrorListener{
                     // Error in request
                     println("Volley error: $it")
+                    val dataObject = Data()
+                    dataObject.title = params["title"]
+                    dataObject.endingTime = formattedEnd.toString()
+                    dataObject.startingTime = formattedStart.toString()
+                    dataObject.userName = params["userName"]
+                    changeActivity(dataObject)
+                    Toast.makeText(this, "Volleying", Toast.LENGTH_SHORT).show()
                 }, credentials)
             request.retryPolicy = DefaultRetryPolicy(
                 DefaultRetryPolicy.DEFAULT_TIMEOUT_MS,
@@ -154,39 +145,21 @@ class MakeBooking() : AppCompatActivity(),Serializable,Parcelable{
                 1f // DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
             )
             VolleySingleton.getInstance(this).addToRequestQueue(request)
-
-            //In the end, just switch activity back to the old one and it should update it.\
-            changeActivity()
         }
         btn_cancel.setOnClickListener{
+            // TODO check if there is any data filled, if yes then display a dialog asking - Dialog
+            if(txt_NAME.text==""){
+                //no name filled out
+            }
             changeActivity()
-        }
-    }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<MakeBooking> {
-        override fun createFromParcel(parcel: Parcel): MakeBooking {
-            return MakeBooking(parcel)
-        }
-
-        override fun newArray(size: Int): Array<MakeBooking?> {
-            return arrayOfNulls(size)
         }
     }
 
 }
-
 private fun Spinner.onItemSelectedListener(function: () -> Unit) {
 
 }
 
 private operator fun AdapterView.OnItemClickListener.invoke(function: () -> Unit) {
-
+    Log.d("ONCLICKED","ACTION")
 }
