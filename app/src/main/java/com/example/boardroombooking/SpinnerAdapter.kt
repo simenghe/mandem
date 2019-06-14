@@ -12,9 +12,10 @@ class SpinnerAdapter() : Activity(), AdapterView.OnItemSelectedListener,Parcelab
 
     }
     override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
-        //id 0 -> AM
-        //id 1 -> PM
-        println("thats a playa: $id")
+        println("This is the pos $pos")
+        runOnUiThread{
+
+        }
 
     }
     override fun onNothingSelected(parent: AdapterView<*>?) {

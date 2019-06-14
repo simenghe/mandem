@@ -2,17 +2,22 @@ package com.example.boardroombooking
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import android.support.annotation.RequiresApi
 import android.support.design.widget.Snackbar
+import android.support.v4.content.ContextCompat
 import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.app.AppCompatActivity;
+import android.telecom.Call
+import android.text.Html
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
@@ -22,9 +27,11 @@ import android.widget.Toast
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.Response
+import kotlinx.android.synthetic.main.activity_bar.*
 import kotlinx.android.synthetic.main.activity_main.*
 
 import kotlinx.android.synthetic.main.activity_make_booking.*
+import kotlinx.android.synthetic.main.activity_new_booking.*
 import kotlinx.android.synthetic.main.content_make_booking.*
 import org.json.JSONObject
 import java.io.Serializable
@@ -44,6 +51,10 @@ const val selectPattern = spinnerPat +" "+ datePat
 const val custSpinnerPat = "h:mm a"
 @Suppress("DEPRECATION")
 class MakeBooking() : AppCompatActivity() {
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(R.anim.enter_from_left,R.anim.exit_to_right)
+    }
     private fun changeActivity(data:Data? = null){
         data?.let {
             Intent(this,MainActivity::class.java).apply {
@@ -52,10 +63,12 @@ class MakeBooking() : AppCompatActivity() {
             }
         }
         finish()
+        overridePendingTransition(R.anim.enter_from_left,R.anim.exit_to_right)
     }
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("MissingSuperCall")
     override fun onCreate(savedInstanceState: Bundle?) {
+        overridePendingTransition(R.anim.slide_in,R.anim.slide_out)
         val dataList = intent.getParcelableArrayListExtra<Data>("datalist")
         dataList.forEach {
             println(it.startingTime)
@@ -65,14 +78,15 @@ class MakeBooking() : AppCompatActivity() {
         Log.d("cringe",length.toString())
         val startList = ArrayList<String>(length)
         for ((i, value) in startTimeList.withIndex()) {
-
             val formattedSpinner = DateFunctions().formatTimeUsingDate(startTimeList[i],custSpinnerPat)
             startList.add(formattedSpinner)
             println(formattedSpinner)
         }
         requestedOrientation = (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_make_booking)
+        setContentView(R.layout.activity_new_booking)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.blackdu)
+        txt_room2.text = Html.fromHtml("Room: <b>$location</b>")
         spinner_start.adapter = ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,startList)
         spinner_start.onItemSelectedListener = SpinnerAdapter()
         //Fill the spinner_end adapter
@@ -105,7 +119,7 @@ class MakeBooking() : AppCompatActivity() {
             val endDate = SimpleDateFormat(selectPattern).parse(endString)
             val formattedStart = DateFunctions().formatTimeUsingDate(startDate, dataPattern)
             val formattedEnd = DateFunctions().formatTimeUsingDate(endDate, dataPattern)
-            Log.d("timers",formattedStart.toString())
+            Log.d("timers",formattedStart)
 
             val url = "https://ratnuback.appspot.com/addBooking/Shaftesbury"
             val params = HashMap<String,String>()
@@ -146,12 +160,19 @@ class MakeBooking() : AppCompatActivity() {
             )
             VolleySingleton.getInstance(this).addToRequestQueue(request)
         }
-        btn_cancel.setOnClickListener{
-            // TODO check if there is any data filled, if yes then display a dialog asking - Dialog
-            if(txt_NAME.text==""){
-                //no name filled out
-            }
-            changeActivity()
+        btn_cancel.setOnClickListener{//Asks user with dialog if they want to cancel their booking.
+                val builder = AlertDialog.Builder(this@MakeBooking)
+                builder.setTitle("Exit Confirmation")
+                builder.setMessage("Are you sure you want to exit?")
+                builder.setPositiveButton("Yes"){dialog, which ->
+                    changeActivity()
+                }
+                builder.setNegativeButton("No"){dialog, which ->
+                    println("NOTHING WILL OCCUR....")
+                }
+                val dialog: AlertDialog = builder.create()
+                dialog.show()
+                println("You have things filled dialog should pop up.")
         }
     }
 

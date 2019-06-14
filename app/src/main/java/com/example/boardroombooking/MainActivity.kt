@@ -6,6 +6,7 @@ import android.content.pm.ActivityInfo
 import android.os.*
 import android.support.v7.app.AppCompatActivity
 import android.support.annotation.RequiresApi
+import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.text.Html
 import android.util.Log
@@ -31,20 +32,16 @@ const val spinnerPat = "hh:mm a"
 const val username = "ratnu"
 const val password = "mandem"
 const val delay:Long = 10000
-var location = "Alcorn"
+var location = "Shaftesbury"
 const val pattern1 = "MM/dd/yyyy, HH:mm:ss"
 var counter = 0
-
 var dataList = ArrayList<Data>()
 val adapter = MainAdapter(dataList)
 var Occupation = false
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity(), Runnable {
-    override fun run() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
+    override fun run() {}
     companion object {
         const val REQUEST_CODE_SAVE_MEETING = 1
         const val EXTRA_NEW_MEETING_DATA = "new_meeting_data"
@@ -56,7 +53,7 @@ class MainActivity : AppCompatActivity(), Runnable {
         val formattedDate = dateFormat.format(date)
         return formattedDate
     }
-    fun getOccupied(curDate: Date): Data? {
+    fun getOccupied(dataList:ArrayList<Data>, curDate: Date): Data? {
         dataList.forEach {
             val startTime = SimpleDateFormat(pattern1).parse(it.startingTime)
             val endTime = SimpleDateFormat(pattern1).parse(it.endingTime)
@@ -86,24 +83,23 @@ class MainActivity : AppCompatActivity(), Runnable {
     }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
-        val location = "Shaftesbury"
         requestedOrientation = (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_bar)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.blackdu)
         recycle_main.layoutManager = LinearLayoutManager(this)
-        getCurrentTimeUsingDate()
-        fetchJson()
+        //fetchJson()
         recycle_main.addItemDecoration(VerticalSpaceItemDecoration(20))
         recycle_main.adapter = adapter
         recycle_main.setHasFixedSize(true)
         txt_room.text = Html.fromHtml("Room: <b>$location</b>")
         startRepeating(recycle_main)
+        swiper.setOnRefreshListener {
+            refreshList()
+            swiper.isRefreshing = false
+        }
         fab.setOnClickListener { view ->
             buttonClicked(view)
-        }
-        btn_refresh.setOnClickListener {
-            //we gon refresh
-            refreshList()
         }
         Handler().postDelayed({
             //check if the first option is already occupied....
@@ -167,7 +163,7 @@ class MainActivity : AppCompatActivity(), Runnable {
         var keys:Iterator<String>
         println("FETCHING JSON")
         //val url = "https://api.myjson.com/bins/9wzmf"
-        var url ="https://ratnuback.appspot.com/getBooking/Shaftesbury"
+        var url ="https://ratnuback.appspot.com/getBooking/"+ location
         val credential = Credentials.basic(username, password);
         val request = Request.Builder().url(url).header("Authorization",credential).build()
         val client = OkHttpClient()
@@ -199,9 +195,11 @@ class MainActivity : AppCompatActivity(), Runnable {
                 } catch (err: JSONException) {
                     Log.d("Error", err.toString())
                 }
-                val occ = DateFunctions().getOccupied()
+                dataList.sortBy { strToDate(it.startingTime) }
+                val occ = getOccupied(dataList,Calendar.getInstance().time)
                 if(occ!=null){
                     runOnUiThread{
+                        txt_bookedTitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP,50f)
                         val endingString = DateFunctions().
                             formatTimeUsingDate(strToDate(occ.endingTime), custSpinnerPat)
                         txt_nextBooking.text = "Booked until ${endingString}"
@@ -210,18 +208,19 @@ class MainActivity : AppCompatActivity(), Runnable {
                     }
                 }else{
                     runOnUiThread{
-                        txt_bookedTitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP,50f)
+                        txt_bookedTitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP,70f)
                         txt_bookedTitle.text = "FREE"
                         if(!dataList.isEmpty()){
+                            //try to get the smallest entry.
                             val nextBooking = dataList[0]
                             val startingString = DateFunctions().
                                 formatTimeUsingDate(strToDate(nextBooking.startingTime), custSpinnerPat)
-                            txt_bookedTitle.text = "Next booking: ${startingString}"
+                            txt_nextBooking.text = "Next booking: ${startingString}"
+                            txt_bookingUser.text = ""
                         }else{
-                            txt_bookedTitle.text = "No more bookings today!"
+                            txt_nextBooking.text = "No more bookings today!"
+                            txt_bookingUser.text = ""
                         }
-
-
                     }
                 }
                 dataList.forEach {
@@ -232,12 +231,12 @@ class MainActivity : AppCompatActivity(), Runnable {
             }
         })
     }
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun doOnListUpdate() {
         //dataList = DateFunctions().sortByTime(dataList)
         //val s= MainAdapter(dataList).removeOptions()
         if(!dataList.isEmpty()){
+            println("SORTING THE LIST")
             dataList.sortBy { strToDate(it.startingTime) }
         }
         runOnUiThread{

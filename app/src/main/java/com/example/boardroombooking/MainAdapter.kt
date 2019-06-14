@@ -1,12 +1,14 @@
 package com.example.boardroombooking
 
 import android.os.Build
+import android.os.UserManager
 import android.support.annotation.RequiresApi
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.bookingitem.view.*
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.*
@@ -28,7 +30,6 @@ class MainAdapter(val dataList: ArrayList<Data>) : RecyclerView.Adapter<MainAdap
             val cellForRow = layoutInflater.inflate(R.layout.booked_card, p0, false)
             return CustomViewHolder(cellForRow)
         }
-
     }
     override fun onBindViewHolder(p0: CustomViewHolder, pos: Int) {
         //example date: 5/30/2019, 16:00:00
@@ -39,11 +40,11 @@ class MainAdapter(val dataList: ArrayList<Data>) : RecyclerView.Adapter<MainAdap
         //should format the date using some java library.
         val startTime = SimpleDateFormat(pattern).parse(booking.startingTime)
         val endTime = SimpleDateFormat(pattern).parse(booking.endingTime)
-        println(startTime < endTime) // this should be outputting true
-        p0.itemView.txt_duration?.text = "Duration : " + booking.startingTime?.substring(10, 16) + " - " +
-                booking.endingTime?.substring(10, 16)
+        val startString = DateFunctions().formatTimeUsingDate(startTime, custSpinnerPat)
+        val endString = DateFunctions().formatTimeUsingDate(endTime, custSpinnerPat)
+        p0.itemView.txt_duration?.text = "$startString - $endString"
     }
-    fun getOccupied(curDate: Date): Data? {
+    fun getOccupied(dataList: ArrayList<Data>, curDate: Date): Data? {
         dataList.forEach {
             val startTime = SimpleDateFormat(pattern1).parse(it.startingTime)
             val endTime = SimpleDateFormat(pattern1).parse(it.endingTime)
@@ -55,14 +56,15 @@ class MainAdapter(val dataList: ArrayList<Data>) : RecyclerView.Adapter<MainAdap
         return null
     }
 
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun removeOptions(): ArrayList<Date> {
-        val formattedDate = DateFunctions().getCurrentTimeUsingDate(pattern1)
+        //val formattedDate = DateFunctions().getCurrentTimeUsingDate(pattern1)
         val zeroDate = DateFunctions().getCurrentTimeUsingDate(datePat)
         val occupiedDates = ArrayList<Date>()
-        println("THIS IS THE CURRENT DATE : " + formattedDate)
-        val curDate = SimpleDateFormat(pattern1).parse(formattedDate)
-        val occupied = getOccupied(curDate)
+        //println("THIS IS THE CURRENT DATE : " + formattedDate)
+        val curDate = Calendar.getInstance().time
+        val occupied = getOccupied(dataList,curDate)
         val todayZero = SimpleDateFormat(datePat).parse(zeroDate)
         if (occupied != null) {
             println("RUNNING NON NULL")
@@ -74,7 +76,13 @@ class MainAdapter(val dataList: ArrayList<Data>) : RecyclerView.Adapter<MainAdap
             for (i in 0..48) { //range from 00:00 -> 24:00 create the list.
                 //println(c.time.toString())
                 val prev = c.time
+                val curTime = Calendar.getInstance().time
+                println("CUR TIME TO REMOVE $curTime")
+                if(prev < curTime){
+                    println("curtime is greater")
+                }
                 if (prev < occEnd) {
+                    println("bookStart is greater")
                 } else {
                     occupiedDates.add(c.time)
                 }
@@ -87,11 +95,17 @@ class MainAdapter(val dataList: ArrayList<Data>) : RecyclerView.Adapter<MainAdap
             c.time = todayZero
             for (i in 0..48) { //range from 00:00 -> 24:00 create the list.
                 val prev = c.time
-                occupiedDates.add(c.time)
+                val curTime = Calendar.getInstance().time
+                println("CUR TIME TO FILTER $curTime")
+                if(prev < curTime) {
+                    println("curtime is greater")
+                }else{
+                    occupiedDates.add(c.time)
+                }
                 c.add(Calendar.MINUTE, 30)
             }
         }else{
-            println("wtf")
+            println("Error has occured....")
         }
         return occupiedDates
     }
