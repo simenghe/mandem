@@ -87,4 +87,24 @@ class DateFunctions{
         }
         return false
     }
+    fun isFine(booking:Data,startTime:Date,endTime:Date):Boolean{ //checks if the time overlaps...
+        val bookStart = DateFunctions().strToDate(booking.startingTime)
+        val bookEnd = DateFunctions().strToDate(booking.endingTime)
+//    val case1 = startTime>bookStart && endTime>bookEnd && endTime>bookStart
+//    val case2  = startTime>bookStart && endTime>bookEnd&&startTime>bookEnd
+//    val case3 = startTime == bookStart && endTime == bookEnd
+//    val case4 = startTime<bookStart && endTime>bookEnd
+        val case1 = startTime<bookStart && endTime<bookEnd
+        val case2 = startTime<bookStart && endTime == bookEnd
+        val case3 = startTime == bookEnd && endTime>bookEnd
+        val case4 = startTime>bookEnd && endTime>bookEnd
+        val netCase = case1 || case2 ||case3||case4
+        if(netCase){
+            println("YUP ITS OCCUPIED...")
+            return true
+        }
+        println("THE BOOKSTART :$bookStart BOOKEND: $bookEnd")
+        println("STARTY: $startTime ENDY: $endTime")
+        return false
+    }
 }

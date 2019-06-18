@@ -1,22 +1,27 @@
 package com.example.boardroombooking
 
+import android.R
 import android.app.Activity
 import android.os.Parcel
 import android.os.Parcelable
 import android.view.View
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import kotlinx.android.synthetic.main.content_make_booking.*
+import okhttp3.internal.notify
 
 class SpinnerAdapter() : Activity(), AdapterView.OnItemSelectedListener,Parcelable{
     constructor(parcel: Parcel) : this() {
-
     }
     override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
-        println("This is the pos $pos")
-        runOnUiThread{
-
+        println("This is the pos $pos and this is id : $id") //identical
+        println("The size of end list is ${endList.count()}")
+        //Remove the entries alligned with the endlist. or recreate the list
+        val startLength = startList.count()
+        endList.clear()
+        for (i in pos..startLength-1){
+            endList.add(startList[i])
         }
-
     }
     override fun onNothingSelected(parent: AdapterView<*>?) {
         print("None selected")

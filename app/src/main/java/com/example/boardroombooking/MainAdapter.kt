@@ -97,9 +97,12 @@ class MainAdapter(val dataList: ArrayList<Data>) : RecyclerView.Adapter<MainAdap
                 val prev = c.time
                 val curTime = Calendar.getInstance().time
                 println("CUR TIME TO FILTER $curTime")
+                if(prev>=curTime){
+                    
+                }
                 if(prev < curTime) {
                     println("curtime is greater")
-                }else{
+                } else{
                     occupiedDates.add(c.time)
                 }
                 c.add(Calendar.MINUTE, 30)
