@@ -93,14 +93,19 @@ class MainAdapter(val dataList: ArrayList<Data>) : RecyclerView.Adapter<MainAdap
             println("its null")
             val c = Calendar.getInstance()
             c.time = todayZero
+            var state = true
             for (i in 0..48) { //range from 00:00 -> 24:00 create the list.
                 val prev = c.time
                 val curTime = Calendar.getInstance().time
                 println("CUR TIME TO FILTER $curTime")
-                if(prev>=curTime){
-                    
-                }
                 if(prev < curTime) {
+                    c.add(Calendar.MINUTE, 30)
+                    val after = c.time
+                    if(curTime<after){
+                        println("Permissible.")
+                        occupiedDates.add(prev)
+                    }
+                    c.add(Calendar.MINUTE, -30)
                     println("curtime is greater")
                 } else{
                     occupiedDates.add(c.time)
