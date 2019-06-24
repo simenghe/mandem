@@ -163,8 +163,6 @@ class MakeBooking() : AppCompatActivity() {
             Log.d("timers",formattedStart)
             //make the dates from string
             var isover = false
-            var overStart = Date()
-            var overEnd = Date()
             dataList.forEach {
                 if(!DateFunctions().isFine(it,startDate,endDate)){
                     println("OVERLAPPING ENTRY.")

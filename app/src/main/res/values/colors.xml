@@ -8,4 +8,6 @@
     <color name="greyish">#c5c7db</color>
     <color name="defaultGrey">#f4f6fc</color>
     <color name ="blackdu">#000000</color>
+    <color name ="springGreen">#22EC85</color>
+    <color name="Red">#FF0000</color>
 </resources>

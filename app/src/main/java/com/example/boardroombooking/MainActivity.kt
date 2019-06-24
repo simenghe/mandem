@@ -81,6 +81,12 @@ class MainActivity : AppCompatActivity(), Runnable {
         }
         return false
     }
+    fun changeToGreen(){
+        constraint_occ.setBackgroundColor(ContextCompat.getColor(this,R.color.springGreen))
+    }
+    fun changeToRed(){
+        constraint_occ.setBackgroundColor(ContextCompat.getColor(this,R.color.Red))
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         requestedOrientation = (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
@@ -110,10 +116,6 @@ class MainActivity : AppCompatActivity(), Runnable {
 
         }, 3000)
     }
-
-
-
-
     val handler = Handler()
     fun startRepeating(v:View){
         runnable.run()
@@ -199,6 +201,7 @@ class MainActivity : AppCompatActivity(), Runnable {
                 val occ = getOccupied(dataList,Calendar.getInstance().time)
                 if(occ!=null){
                     runOnUiThread{
+                        changeToRed()
                         txt_bookedTitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP,50f)
                         val endingString = DateFunctions().
                             formatTimeUsingDate(strToDate(occ.endingTime), custSpinnerPat)
@@ -208,6 +211,7 @@ class MainActivity : AppCompatActivity(), Runnable {
                     }
                 }else{
                     runOnUiThread{
+                        changeToGreen()
                         txt_bookedTitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP,70f)
                         txt_bookedTitle.text = "FREE"
                         if(!dataList.isEmpty()){
