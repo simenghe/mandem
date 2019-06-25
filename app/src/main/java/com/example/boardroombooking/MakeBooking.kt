@@ -18,6 +18,8 @@ import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.app.AppCompatActivity;
 import android.telecom.Call
 import android.text.Html
+import android.text.SpannableStringBuilder
+import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
@@ -32,8 +34,15 @@ import kotlinx.android.synthetic.main.activity_bar.*
 import kotlinx.android.synthetic.main.activity_main.*
 
 import kotlinx.android.synthetic.main.activity_make_booking.*
+import kotlinx.android.synthetic.main.activity_make_booking.btn_cancel
+import kotlinx.android.synthetic.main.activity_make_booking.btn_save
 import kotlinx.android.synthetic.main.activity_new_booking.*
 import kotlinx.android.synthetic.main.content_make_booking.*
+import kotlinx.android.synthetic.main.content_make_booking.edit_name
+import kotlinx.android.synthetic.main.content_make_booking.edit_title
+import kotlinx.android.synthetic.main.content_make_booking.spinner_end
+import kotlinx.android.synthetic.main.content_make_booking.spinner_start
+import kotlinx.android.synthetic.main.new_content_cooking.*
 import org.json.JSONObject
 import java.io.Serializable
 import java.lang.Error
@@ -97,17 +106,13 @@ class MakeBooking() : AppCompatActivity() {
         requestedOrientation = (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_booking)
-        window.statusBarColor = ContextCompat.getColor(this, R.color.blackdu)
-        txt_room2.text = Html.fromHtml("Room: <b>$location</b>")
+        txt_room.text = location
+        window.statusBarColor = ContextCompat.getColor(this, R.color.havasCustom1)
         val endAdapter = ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,endList)
         spinner_end.adapter = endAdapter
         spinner_end.onItemSelectedListener = object:AdapterView.OnItemSelectedListener{
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-               //nothing needs to happen
-            }
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {}
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
         val startAdapter = ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,startList)
         spinner_start.adapter =  startAdapter
@@ -231,6 +236,8 @@ class MakeBooking() : AppCompatActivity() {
         }
     }
 }
+
+
 private fun Spinner.onItemSelectedListener(function: () -> Unit) {
 
 }

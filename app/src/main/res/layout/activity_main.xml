@@ -19,7 +19,7 @@
             app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
             android:layout_marginLeft="418dp" android:layout_marginStart="418dp"
             app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"
-            android:id="@+id/constraintLayout">
+            android:id="@+id/constraint_recycle">
         <android.support.v4.widget.SwipeRefreshLayout android:layout_width="502dp"
                                                       android:layout_height="426dp"
                                                       app:layout_constraintTop_toTopOf="parent"
@@ -57,9 +57,20 @@
             app:layout_constraintHorizontal_bias="1.0" android:id="@+id/constraint_occ">
 
         <TextView
+                android:layout_width="350dp"
+                android:textSize="40dp"
+                android:textColor="@android:color/white"
+                android:layout_height="50dp"
+                android:id="@+id/txt_room2" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp" app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginLeft="8dp" android:layout_marginStart="8dp" android:layout_marginTop="8dp"
+                app:layout_constraintTop_toTopOf="parent" android:layout_marginBottom="8dp"
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintHorizontal_bias="0.638"
+                app:layout_constraintVertical_bias="0.127" android:text="Room: Shaftesbury"/>
+        <TextView
                 android:text="Important Scammer Meeting"
                 android:layout_width="350dp"
-                android:layout_height="82dp"
+                android:layout_height="119dp"
                 android:textSize="32dp"
                 android:textColor="@android:color/white"
                 android:id="@+id/txt_bookedTitle" android:layout_marginTop="8dp"
@@ -67,8 +78,8 @@
                 app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginEnd="8dp" android:layout_marginRight="8dp"
                 app:layout_constraintStart_toStartOf="parent" android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp" app:layout_constraintHorizontal_bias="0.639"
-                app:layout_constraintVertical_bias="0.406"/>
+                android:layout_marginStart="8dp" app:layout_constraintHorizontal_bias="0.638"
+                app:layout_constraintVertical_bias="0.441"/>
         <TextView
                 android:text="Booked until 10:00AM"
                 android:layout_width="350dp"
@@ -81,8 +92,8 @@
                 android:layout_marginRight="8dp" app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginLeft="8dp" android:layout_marginStart="8dp" android:layout_marginTop="8dp"
                 app:layout_constraintTop_toTopOf="parent" android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintHorizontal_bias="0.639"
-                app:layout_constraintVertical_bias="0.162"/>
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintHorizontal_bias="0.638"
+                app:layout_constraintVertical_bias="0.263"/>
         <TextView
                 android:text="James Baker"
                 android:layout_width="350dp"
@@ -94,20 +105,21 @@
                 android:layout_marginRight="8dp" app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginLeft="8dp" android:layout_marginStart="8dp" android:layout_marginTop="8dp"
                 app:layout_constraintTop_toTopOf="parent" android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintHorizontal_bias="0.639"
-                app:layout_constraintVertical_bias="0.566"/>
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintHorizontal_bias="0.638"
+                app:layout_constraintVertical_bias="0.64"/>
         <Button
                 android:text="+ BOOK A MEETING"
+                style="?android:attr/borderlessButtonStyle"
                 android:textColor="@android:color/white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_custom_green"
                 android:id="@+id/fab" android:layout_marginTop="8dp"
                 app:layout_constraintTop_toTopOf="parent" android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.871"
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.798"
                 android:layout_marginStart="8dp" app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginLeft="8dp" android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginRight="8dp" app:layout_constraintHorizontal_bias="0.16"/>
+                android:layout_marginRight="8dp" app:layout_constraintHorizontal_bias="0.302"/>
     </android.support.constraint.ConstraintLayout>
 
 </android.support.constraint.ConstraintLayout>

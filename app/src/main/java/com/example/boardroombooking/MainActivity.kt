@@ -1,6 +1,7 @@
 package com.example.boardroombooking
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.*
@@ -16,6 +17,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.synthetic.main.activity_bar.*
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.booked_card.*
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
@@ -82,23 +84,34 @@ class MainActivity : AppCompatActivity(), Runnable {
         return false
     }
     fun changeToGreen(){
-        constraint_occ.setBackgroundColor(ContextCompat.getColor(this,R.color.springGreen))
+        constraint_occ.setBackgroundColor(ContextCompat.getColor(this,R.color.havasLighterGrey))
+        fab.background = ContextCompat.getDrawable(applicationContext,R.drawable.button_custom_pink)
+        txt_room2.setTextColor(ContextCompat.getColor(applicationContext,R.color.havasCustom1))
+        txt_nextBooking.setTextColor(ContextCompat.getColor(applicationContext,R.color.havasCustom1))
+        txt_bookingUser.setTextColor(ContextCompat.getColor(applicationContext,R.color.havasCustom1))
+        txt_bookedTitle.setTextColor(ContextCompat.getColor(applicationContext,R.color.havasPink))
     }
     fun changeToRed(){
-        constraint_occ.setBackgroundColor(ContextCompat.getColor(this,R.color.Red))
+        constraint_occ.setBackgroundColor(ContextCompat.getColor(this,R.color.havasPink))
+        fab.background = ContextCompat.getDrawable(applicationContext,R.drawable.button_custom_green)
+        txt_room2.setTextColor(ContextCompat.getColor(applicationContext,R.color.White))
+        txt_nextBooking.setTextColor(ContextCompat.getColor(applicationContext,R.color.White))
+        txt_bookingUser.setTextColor(ContextCompat.getColor(applicationContext,R.color.White))
+        txt_bookedTitle.setTextColor(ContextCompat.getColor(applicationContext,R.color.White))
     }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         requestedOrientation = (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_bar)
-        window.statusBarColor = ContextCompat.getColor(this, R.color.blackdu)
+        txt_room2.text = location
+        window.statusBarColor = ContextCompat.getColor(this, R.color.havasCustom1)
         recycle_main.layoutManager = LinearLayoutManager(this)
         //fetchJson()
         recycle_main.addItemDecoration(VerticalSpaceItemDecoration(20))
         recycle_main.adapter = adapter
         recycle_main.setHasFixedSize(true)
-        txt_room.text = Html.fromHtml("Room: <b>$location</b>")
+        //txt_room.text = Html.fromHtml("Room: <b>$location</b>")
         startRepeating(recycle_main)
         swiper.setOnRefreshListener {
             refreshList()
@@ -202,7 +215,7 @@ class MainActivity : AppCompatActivity(), Runnable {
                 if(occ!=null){
                     runOnUiThread{
                         changeToRed()
-                        txt_bookedTitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP,50f)
+                        txt_bookedTitle?.setTextSize(TypedValue.COMPLEX_UNIT_DIP,40f)
                         val endingString = DateFunctions().
                             formatTimeUsingDate(strToDate(occ.endingTime), custSpinnerPat)
                         txt_nextBooking.text = "Booked until ${endingString}"
@@ -212,13 +225,18 @@ class MainActivity : AppCompatActivity(), Runnable {
                 }else{
                     runOnUiThread{
                         changeToGreen()
-                        txt_bookedTitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP,70f)
+
+
+                        txt_bookedTitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP,100f)
                         txt_bookedTitle.text = "FREE"
                         if(!dataList.isEmpty()){
                             //try to get the smallest entry.
                             val nextBooking = dataList[0]
                             val startingString = DateFunctions().
                                 formatTimeUsingDate(strToDate(nextBooking.startingTime), custSpinnerPat)
+                            txt_nextBooking.setTextColor(ContextCompat.getColor(applicationContext,R.color.havasCustom1))
+                            txt_bookingUser.setTextColor(ContextCompat.getColor(applicationContext,R.color.havasCustom1))
+
                             txt_nextBooking.text = "Next booking: ${startingString}"
                             txt_bookingUser.text = ""
                         }else{

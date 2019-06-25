@@ -10,4 +10,11 @@
     <color name ="blackdu">#000000</color>
     <color name ="springGreen">#22EC85</color>
     <color name="Red">#FF0000</color>
+    <color name = "havasCustom1">#252525</color>
+    <color name = "havasPink">#ED546B</color>
+    <color name = "havasLightGrey">#AAAAAA</color>
+    <color name = "havasLighterGrey">#d3d3d3</color>
+    <color name = "havasGreyer">#8e8e8e</color>
+    <color name = "pinkSuperLight">#FFe9f4</color>
+    <color name = "White">#FFFFFF</color>
 </resources>
